@@ -351,7 +351,7 @@ function protoToMessagePackTisch({protoFiles, messageType}) {
     return tischFunctions[messageType];
 }
 
-function protoToDogPackTisch({protoFiles, messageType}) {
+function protoToDogPackTisch({protoFiles, messageType, options}) {
     const protoJson = invokeProtocJson({protoFiles});
     const types = parseTypeDefinitions(protoJson);
 
@@ -360,6 +360,13 @@ function protoToDogPackTisch({protoFiles, messageType}) {
     }
 
     const tischFunctions = typesToTisch({types, typeToTisch: typeToDogPackTisch});
+    
+    if (options && options.omitStringTable) {
+        return function () {
+            return tischFunctions[messageType](...arguments);
+        };
+    }
+
     return function ({etc}) {
         return [
             [String, String, ...etc],
@@ -403,8 +410,8 @@ function validate(msgpackMessage, tischValidate) {
     return {errors: tischValidate.errors};
 }
 
-function protoToValidator({protoFiles, messageType, protoToTisch}) {
-    const schema = protoToTisch({protoFiles, messageType});
+function protoToValidator({protoFiles, messageType, options, protoToTisch}) {
+    const schema = protoToTisch({protoFiles, messageType, options});
     const validateJs = tisch.compileFunction(schema);
     const validator = function (msgpackMessage) {
         return validate(msgpackMessage, validateJs);
@@ -413,12 +420,12 @@ function protoToValidator({protoFiles, messageType, protoToTisch}) {
     return validator;
 }
 
-function protoToMessagePackValidator({protoFiles, messageType}) {
-    return protoToValidator({protoFiles, messageType, protoToTisch: protoToMessagePackTisch});
+function protoToMessagePackValidator({protoFiles, messageType, options}) {
+    return protoToValidator({protoFiles, messageType, options, protoToTisch: protoToMessagePackTisch});
 }
 
-function protoToDogPackValidator({protoFiles, messageType}) {
-    return protoToValidator({protoFiles, messageType, protoToTisch: protoToDogPackTisch});
+function protoToDogPackValidator({protoFiles, messageType, options}) {
+    return protoToValidator({protoFiles, messageType, options, protoToTisch: protoToDogPackTisch});
 }
 
 module.exports = {
