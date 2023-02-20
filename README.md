@@ -14,6 +14,12 @@ The requirement is that `protoc` be available in the `PATH`.
 
 protojson also depends on Python 3.
 
+[dependencies/massagepack](dependencies/massagepack) depends on the NPM module
+"msgpack-lite". Once you've installed `npm`, you can install msgpack-lite via:
+```console
+npm install msgpack-lite
+```
+
 This project is a Node.js library used to implement two command line tools:
 
 - `./validate-msgpack [--message <type>] <proto> ...`

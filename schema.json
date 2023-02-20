@@ -1,0 +1,651 @@
+{
+  "fileToGenerate": [
+    "span.proto",
+    "tracer_payload.proto"
+  ],
+  "compilerVersion": {
+    "major": 3,
+    "minor": 12,
+    "patch": 4,
+    "suffix": ""
+  },
+  "protoFile": [
+    {
+      "name": "span.proto",
+      "package": "pb",
+      "messageType": [
+        {
+          "name": "Span",
+          "field": [
+            {
+              "name": "service",
+              "number": 1,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "service",
+              "location": {
+                "span": [
+                  8,
+                  4,
+                  23
+                ],
+                "leadingComments": " service is the name of the service with which this span is associated.\n @gotags: json:\"service\" msg:\"service\"\n"
+              }
+            },
+            {
+              "name": "name",
+              "number": 2,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "name",
+              "location": {
+                "span": [
+                  11,
+                  4,
+                  20
+                ],
+                "leadingComments": " name is the operation name of this span.\n @gotags: json:\"name\" msg:\"name\"\n"
+              }
+            },
+            {
+              "name": "resource",
+              "number": 3,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "resource",
+              "location": {
+                "span": [
+                  14,
+                  4,
+                  24
+                ],
+                "leadingComments": " resource is the resource name of this span, also sometimes called the endpoint (for web spans).\n @gotags: json:\"resource\" msg:\"resource\"\n"
+              }
+            },
+            {
+              "name": "traceID",
+              "number": 4,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_UINT64",
+              "jsonName": "traceID",
+              "location": {
+                "span": [
+                  17,
+                  4,
+                  23
+                ],
+                "leadingComments": " traceID is the ID of the trace to which this span belongs.\n @gotags: json:\"trace_id\" msg:\"trace_id\"\n"
+              }
+            },
+            {
+              "name": "spanID",
+              "number": 5,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_UINT64",
+              "jsonName": "spanID",
+              "location": {
+                "span": [
+                  20,
+                  4,
+                  22
+                ],
+                "leadingComments": " spanID is the ID of this span.\n @gotags: json:\"span_id\" msg:\"span_id\"\n"
+              }
+            },
+            {
+              "name": "parentID",
+              "number": 6,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_UINT64",
+              "jsonName": "parentID",
+              "location": {
+                "span": [
+                  23,
+                  4,
+                  24
+                ],
+                "leadingComments": " parentID is the ID of this span's parent, or zero if this span has no parent.\n @gotags: json:\"parent_id\" msg:\"parent_id\"\n"
+              }
+            },
+            {
+              "name": "start",
+              "number": 7,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_INT64",
+              "jsonName": "start",
+              "location": {
+                "span": [
+                  26,
+                  4,
+                  20
+                ],
+                "leadingComments": " start is the number of nanoseconds between the Unix epoch and the beginning of this span.\n @gotags: json:\"start\" msg:\"start\"\n"
+              }
+            },
+            {
+              "name": "duration",
+              "number": 8,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_INT64",
+              "jsonName": "duration",
+              "location": {
+                "span": [
+                  29,
+                  4,
+                  23
+                ],
+                "leadingComments": " duration is the time length of this span in nanoseconds.\n @gotags: json:\"duration\" msg:\"duration\"\n"
+              }
+            },
+            {
+              "name": "error",
+              "number": 9,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_INT32",
+              "jsonName": "error",
+              "location": {
+                "span": [
+                  32,
+                  4,
+                  20
+                ],
+                "leadingComments": " error is 1 if there is an error associated with this span, or 0 if there is not.\n @gotags: json:\"error\" msg:\"error\"\n"
+              }
+            },
+            {
+              "name": "meta",
+              "number": 10,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.Span.MetaEntry",
+              "jsonName": "meta",
+              "location": {
+                "span": [
+                  35,
+                  4,
+                  34
+                ],
+                "leadingComments": " meta is a mapping from tag name to tag value for string-valued tags.\n @gotags: json:\"meta\" msg:\"meta\"\n"
+              }
+            },
+            {
+              "name": "metrics",
+              "number": 11,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.Span.MetricsEntry",
+              "jsonName": "metrics",
+              "location": {
+                "span": [
+                  38,
+                  4,
+                  37
+                ],
+                "leadingComments": " metrics is a mapping from tag name to tag value for numeric-valued tags.\n @gotags: json:\"metrics\" msg:\"metrics\"\n"
+              }
+            },
+            {
+              "name": "type",
+              "number": 12,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "type",
+              "location": {
+                "span": [
+                  41,
+                  4,
+                  21
+                ],
+                "leadingComments": " type is the type of the service with which this span is associated.  Example values: web, db, lambda.\n @gotags: json:\"type\" msg:\"type\"\n"
+              }
+            },
+            {
+              "name": "meta_struct",
+              "number": 13,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.Span.MetaStructEntry",
+              "jsonName": "metaStruct",
+              "location": {
+                "span": [
+                  44,
+                  4,
+                  40
+                ],
+                "leadingComments": " meta_struct is a registry of structured \"other\" data used by, e.g., AppSec.\n @gotags: json:\"meta_struct,omitempty\" msg:\"meta_struct\"\n"
+              }
+            }
+          ],
+          "nestedType": [
+            {
+              "name": "MetaEntry",
+              "field": [
+                {
+                  "name": "key",
+                  "number": 1,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "key"
+                },
+                {
+                  "name": "value",
+                  "number": 2,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "value"
+                }
+              ],
+              "options": {
+                "mapEntry": true
+              }
+            },
+            {
+              "name": "MetricsEntry",
+              "field": [
+                {
+                  "name": "key",
+                  "number": 1,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "key"
+                },
+                {
+                  "name": "value",
+                  "number": 2,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_DOUBLE",
+                  "jsonName": "value"
+                }
+              ],
+              "options": {
+                "mapEntry": true
+              }
+            },
+            {
+              "name": "MetaStructEntry",
+              "field": [
+                {
+                  "name": "key",
+                  "number": 1,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "key"
+                },
+                {
+                  "name": "value",
+                  "number": 2,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_BYTES",
+                  "jsonName": "value"
+                }
+              ],
+              "options": {
+                "mapEntry": true
+              }
+            }
+          ],
+          "location": {
+            "span": [
+              5,
+              0,
+              45,
+              1
+            ]
+          }
+        }
+      ],
+      "options": {
+        "goPackage": "github.com/DataDog/datadog-agent/pkg/trace/pb",
+        "location": {
+          "span": [
+            3,
+            0,
+            66
+          ]
+        }
+      },
+      "syntax": "proto3",
+      "location": {
+        "span": [
+          0,
+          0,
+          45,
+          1
+        ]
+      }
+    },
+    {
+      "name": "tracer_payload.proto",
+      "package": "pb",
+      "dependency": [
+        "span.proto"
+      ],
+      "messageType": [
+        {
+          "name": "TraceChunk",
+          "field": [
+            {
+              "name": "priority",
+              "number": 1,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_INT32",
+              "jsonName": "priority",
+              "location": {
+                "span": [
+                  10,
+                  8,
+                  27
+                ],
+                "leadingComments": " priority specifies sampling priority of the trace.\n @gotags: json:\"priority\" msg:\"priority\"\n"
+              }
+            },
+            {
+              "name": "origin",
+              "number": 2,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "origin",
+              "location": {
+                "span": [
+                  13,
+                  8,
+                  26
+                ],
+                "leadingComments": " origin specifies origin product (\"lambda\", \"rum\", etc.) of the trace.\n @gotags: json:\"origin\" msg:\"origin\"\n"
+              }
+            },
+            {
+              "name": "spans",
+              "number": 3,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.Span",
+              "jsonName": "spans",
+              "location": {
+                "span": [
+                  16,
+                  8,
+                  32
+                ],
+                "leadingComments": " spans specifies list of containing spans.\n @gotags: json:\"spans\" msg:\"spans\"\n"
+              }
+            },
+            {
+              "name": "tags",
+              "number": 4,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.TraceChunk.TagsEntry",
+              "jsonName": "tags",
+              "location": {
+                "span": [
+                  19,
+                  8,
+                  37
+                ],
+                "leadingComments": " tags specifies tags common in all `spans`.\n @gotags: json:\"tags\" msg:\"tags\"\n"
+              }
+            },
+            {
+              "name": "droppedTrace",
+              "number": 5,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_BOOL",
+              "jsonName": "droppedTrace",
+              "location": {
+                "span": [
+                  22,
+                  8,
+                  30
+                ],
+                "leadingComments": " droppedTrace specifies whether the trace was dropped by samplers or not.\n @gotags: json:\"dropped_trace\" msg:\"dropped_trace\"\n"
+              }
+            }
+          ],
+          "nestedType": [
+            {
+              "name": "TagsEntry",
+              "field": [
+                {
+                  "name": "key",
+                  "number": 1,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "key"
+                },
+                {
+                  "name": "value",
+                  "number": 2,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "value"
+                }
+              ],
+              "options": {
+                "mapEntry": true
+              }
+            }
+          ],
+          "location": {
+            "span": [
+              7,
+              0,
+              23,
+              1
+            ],
+            "leadingComments": " TraceChunk represents a list of spans with the same trace ID. In other words, a chunk of a trace.\n"
+          }
+        },
+        {
+          "name": "TracerPayload",
+          "field": [
+            {
+              "name": "containerID",
+              "number": 1,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "containerID",
+              "location": {
+                "span": [
+                  29,
+                  8,
+                  31
+                ],
+                "leadingComments": " containerID specifies the ID of the container where the tracer is running on.\n @gotags: json:\"container_id\" msg:\"container_id\"\n"
+              }
+            },
+            {
+              "name": "languageName",
+              "number": 2,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "languageName",
+              "location": {
+                "span": [
+                  32,
+                  8,
+                  32
+                ],
+                "leadingComments": " languageName specifies language of the tracer.\n @gotags: json:\"language_name\" msg:\"language_name\"\n"
+              }
+            },
+            {
+              "name": "languageVersion",
+              "number": 3,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "languageVersion",
+              "location": {
+                "span": [
+                  35,
+                  8,
+                  35
+                ],
+                "leadingComments": " languageVersion specifies language version of the tracer.\n @gotags: json:\"language_version\" msg:\"language_version\"\n"
+              }
+            },
+            {
+              "name": "tracerVersion",
+              "number": 4,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "tracerVersion",
+              "location": {
+                "span": [
+                  38,
+                  8,
+                  33
+                ],
+                "leadingComments": " tracerVersion specifies version of the tracer.\n @gotags: json:\"tracer_version\" msg:\"tracer_version\"\n"
+              }
+            },
+            {
+              "name": "runtimeID",
+              "number": 5,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "runtimeID",
+              "location": {
+                "span": [
+                  41,
+                  8,
+                  29
+                ],
+                "leadingComments": " runtimeID specifies V4 UUID representation of a tracer session.\n @gotags: json:\"runtime_id\" msg:\"runtime_id\"\n"
+              }
+            },
+            {
+              "name": "chunks",
+              "number": 6,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.TraceChunk",
+              "jsonName": "chunks",
+              "location": {
+                "span": [
+                  44,
+                  8,
+                  39
+                ],
+                "leadingComments": " chunks specifies list of containing trace chunks.\n @gotags: json:\"chunks\" msg:\"chunks\"\n"
+              }
+            },
+            {
+              "name": "tags",
+              "number": 7,
+              "label": "LABEL_REPEATED",
+              "type": "TYPE_MESSAGE",
+              "typeName": ".pb.TracerPayload.TagsEntry",
+              "jsonName": "tags",
+              "location": {
+                "span": [
+                  47,
+                  8,
+                  37
+                ],
+                "leadingComments": " tags specifies tags common in all `chunks`.\n @gotags: json:\"tags\" msg:\"tags\"\n"
+              }
+            },
+            {
+              "name": "env",
+              "number": 8,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "env",
+              "location": {
+                "span": [
+                  50,
+                  8,
+                  23
+                ],
+                "leadingComments": " env specifies `env` tag that set with the tracer.\n @gotags: json:\"env\" msg:\"env\"\n"
+              }
+            },
+            {
+              "name": "hostname",
+              "number": 9,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "hostname",
+              "location": {
+                "span": [
+                  53,
+                  8,
+                  28
+                ],
+                "leadingComments": " hostname specifies hostname of where the tracer is running.\n @gotags: json:\"hostname\" msg:\"hostname\"\n"
+              }
+            },
+            {
+              "name": "appVersion",
+              "number": 10,
+              "label": "LABEL_OPTIONAL",
+              "type": "TYPE_STRING",
+              "jsonName": "appVersion",
+              "location": {
+                "span": [
+                  56,
+                  8,
+                  31
+                ],
+                "leadingComments": " version specifies `version` tag that set with the tracer.\n @gotags: json:\"app_version\" msg:\"app_version\"\n"
+              }
+            }
+          ],
+          "nestedType": [
+            {
+              "name": "TagsEntry",
+              "field": [
+                {
+                  "name": "key",
+                  "number": 1,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "key"
+                },
+                {
+                  "name": "value",
+                  "number": 2,
+                  "label": "LABEL_OPTIONAL",
+                  "type": "TYPE_STRING",
+                  "jsonName": "value"
+                }
+              ],
+              "options": {
+                "mapEntry": true
+              }
+            }
+          ],
+          "location": {
+            "span": [
+              26,
+              0,
+              57,
+              1
+            ],
+            "leadingComments": " TracerPayload represents a payload the trace agent receives from tracers.\n"
+          }
+        }
+      ],
+      "options": {
+        "goPackage": "github.com/DataDog/datadog-agent/pkg/trace/pb",
+        "location": {
+          "span": [
+            3,
+            0,
+            66
+          ]
+        }
+      },
+      "syntax": "proto3",
+      "location": {
+        "span": [
+          0,
+          0,
+          57,
+          1
+        ]
+      }
+    }
+  ]
+}

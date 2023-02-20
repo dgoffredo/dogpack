@@ -4,3 +4,6 @@
 [submodule "dependencies/tisch"]
 	path = dependencies/tisch
 	url = ../tisch.git
+[submodule "dependencies/massagepack"]
+	path = dependencies/massagepack
+	url = ../massagepack.git
