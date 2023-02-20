@@ -267,7 +267,7 @@ function typeToDogPackTisch({type, getSchemaFunction}) {
                 if (field.typeName) {
                     valueSchemaFunction = getSchemaFunction(field.typeName);
                 } else {
-                    valueSchemaFunction = primitiveTypeToMessagePackTisch(field.type);
+                    valueSchemaFunction = primitiveTypeToDogPackTisch(field.type);
                 }
                 const valueSchema = valueSchemaFunction(...arguments);
                 if (field.isArray) {
