@@ -1,3 +1,7 @@
+# DogPack
+It's a Protocol Buffer schema based validator for MessagePack.  For dogs.
+
+## Dependencies
 [dependencies/](dependencies/) contains git submodules that are the runtime
 dependencies of this tool. Run the following command to make sure they're
 cloned:
@@ -20,6 +24,7 @@ protojson also depends on Python 3.
 npm install msgpack-lite
 ```
 
+## Usage
 This project is a Node.js library used to implement two command line tools:
 
 - `./validate-msgpack [--message <type>] <proto> ...`
