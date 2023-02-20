@@ -57,7 +57,7 @@ function parseGotags(comment) {
     .split('\n')
     .map(line => line.trim())
     .filter(line => line.startsWith('@gotags:'));
-    
+
     if (gotagsLines.length === 0) {
         return {};
     }
@@ -127,9 +127,20 @@ function parseTypeDefinitions(protoJson) {
                 if (field.typeName) {
                     fieldDefinition.typeName = field.typeName
                 }
+                // `label: "LABEL_REPEATED"` could mean that it's a
+                // `repeated` field (i.e. an array), but it also could be a
+                // `map<...>`, because maps are just syntactic sugar for
+                // `repeated` key/value messages.
+                // So, we detect the latter case by seeing whether the field
+                // type name begins with the type name. That means its a nested
+                // type, which maps are.
+                // Non-map nested types I we won't worry about.
+                if (field.label === 'LABEL_REPEATED' && !(field.typeName || '').startsWith(`${typeName}.`)) {
+                    fieldDefinition.isArray = true;
+                }
                 const gotagsMsgName = parseGotags(field.location.leadingComments || '').msg;
                 fieldDefinition.msgpackName = gotagsMsgName || field.name;
-                
+
                 typeDefinition.fields.push(fieldDefinition);
             }
 
@@ -202,7 +213,7 @@ function mapTypeToMessagePackTisch({type, getSchemaFunction}) {
 
 function typeToMessagePackTisch({type, getSchemaFunction}) {
     if (typeof type === 'string') {
-        return primitiveTypeToMessagePackTisch;
+        return primitiveTypeToMessagePackTisch(type);
     }
 
     if (type.map) {
@@ -211,7 +222,7 @@ function typeToMessagePackTisch({type, getSchemaFunction}) {
 
     // It's a message.
     const message = type.message;
-    return function ({Any, etc, map}) {
+    return function ({etc}) {
         return {
             ...Object.fromEntries(message.fields.map(field => {
                 let valueSchemaFunction;
@@ -222,7 +233,12 @@ function typeToMessagePackTisch({type, getSchemaFunction}) {
                 }
                 // The question mark means "optional" in tisch. Every field is
                 // optional in proto3.
-                return [`${field.msgpackName}?`, valueSchemaFunction(...arguments)];
+                const keySchema = `${field.msgpackName}?`;
+                const valueSchema = valueSchemaFunction(...arguments);
+                if (field.isArray) {
+                    return [keySchema, [valueSchema, ...etc]];
+                }
+                return [keySchema, valueSchema];
             })),
             ...etc
         };
@@ -230,7 +246,11 @@ function typeToMessagePackTisch({type, getSchemaFunction}) {
 }
 
 // TODO: Cyclic dependencies will shatter this function. That's fine for now.
-function typesToMessagePackTisch(types) {
+// `types` is `{[type name]: type definition}`.
+// `typeToTisch` is a function that converts a type definition into a tisch
+// schema. It's a parameter because there are two versions: one for MessagePack
+// and one for DogPack (which is a subset of MessagePack).
+function typesToTisch({types, typeToTisch}) {
     // {[type name]: type definition}  ->  {[type name]: tisch schema function}
     const schemaFunctions = {};
 
@@ -240,7 +260,7 @@ function typesToMessagePackTisch(types) {
             return already;
         }
 
-        const schemaFunction = typeToMessagePackTisch({type: types[typeName], getSchemaFunction});
+        const schemaFunction = typeToTisch({type: types[typeName], getSchemaFunction});
         schemaFunctions[typeName] = schemaFunction;
         return schemaFunction;
     }
@@ -249,15 +269,7 @@ function typesToMessagePackTisch(types) {
     return schemaFunctions;
 }
 
-function protoToMessagePackTisch({protoFiles, messageType}) {
-    // TODO:
-    // ✅ run protojson
-    // ✅ create a mapping of types, including map<> types and @gotags names. 
-    // ✅ if messageType is undefined, then get the messageType from 
-    //   last(topologicallySorted(...)).
-    // ✅  build up schemas = {[proto type name]: schema function}
-    // - return schemas[messageType]
-    
+function protoToTisch({protoFiles, messageType, typeToTisch}) {
     const protoJson = invokeProtocJson({protoFiles});
     const types = parseTypeDefinitions(protoJson);
 
@@ -265,8 +277,12 @@ function protoToMessagePackTisch({protoFiles, messageType}) {
         messageType = deduceRootType(types).name;
     }
 
-    const tischFunctions = typesToMessagePackTisch(types);
+    const tischFunctions = typesToTisch({types, typeToTisch});
     return tischFunctions[messageType];
+}
+
+function protoToMessagePackTisch({protoFiles, messageType}) {
+    return protoToTisch({protoFiles, messageType, typeToTisch: typeToMessagePackTisch});
 }
 
 function last(iterator, fallback) {
@@ -290,7 +306,7 @@ function* topologicallySorted({nodes, getChildren}) {
         }
         yield node;
     }
-    
+
     for (const node of nodes) {
         yield* visit(node);
     }
