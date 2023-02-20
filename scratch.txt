@@ -1,0 +1,22 @@
+- Read the proto files.
+- Find the messages.
+- Identify .nestedType[].options.mapEntry===true, if any. These are the map<K,V> types.
+- msgpack flavor:
+    - message -> map([name, schema], ..., [String, Any], ...etc)
+    - map<K, V> -> map([K, V], ...etc)
+- dogpack flavor:
+    - message -> [schema1, schema2, ..., Any, ...etc]
+    - map<string, V> -> map([Integer, V], ...etc)
+    - map<K, V> -> map([K, V], ...etc)
+    - string -> Integer
+    - overall schema is [[String, String, ...etc], schema (from above)]
+
+What does the javascript interface look like?
+
+    protoToMsgpackTisch
+    protoToDogpackTisch
+
+What does the command line interface look like?
+
+    ./validate-msgpack <proto>
+    ./validate-dogpack <proto>
