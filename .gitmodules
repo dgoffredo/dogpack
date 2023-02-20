@@ -1,0 +1,6 @@
+[submodule "dependencies/protojson"]
+	path = dependencies/protojson
+	url = ../protojson.git
+[submodule "dependencies/tisch"]
+	path = dependencies/tisch
+	url = ../tisch.git
