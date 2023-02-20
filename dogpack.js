@@ -140,44 +140,128 @@ function parseTypeDefinitions(protoJson) {
     return types;
 }
 
+function deduceRootType(types) {
+    // Deduce the "root type name" by topologically sorting the type
+    // definitions. Assign the resulting name to `messageType`.
+    return last(topologicallySorted({nodes: Object.values(types), getChildren: function* (typeDefinition) {
+        if (typeDefinition.map) {
+            // The value in (key, value) might be a message type.
+            const map = typeDefinition;
+            if (map.valueTypeName) {
+                yield types[map.valueTypeName];
+            }
+            return;
+        }
+
+        // We're a message type. Return any of our fields whose types have
+        // names.
+        for (const field of typeDefinition.message.fields) {
+            if (field.typeName) {
+                yield types[field.typeName];
+            }
+        }
+    }}));
+}
+
+// TODO: Add `Buffer` support to tisch.
+function primitiveTypeToMessagePackTisch(type) {
+    return ({
+        TYPE_DOUBLE: () => Number,
+        TYPE_FLOAT: () => Number,
+        TYPE_INT64: ({Integer}) => Integer,
+        TYPE_UINT64:({Integer}) => Integer,
+        TYPE_INT32: ({Integer}) => Integer,
+        TYPE_FIXED64: ({Integer}) => Integer,
+        TYPE_FIXED32: ({Integer}) => Integer,
+        TYPE_BOOL: () => Boolean,
+        TYPE_STRING: () => String,
+        TYPE_BYTES: () => Buffer,
+        TYPE_UINT32: ({Integer}) => Integer,
+        TYPE_SFIXED32: ({Integer}) => Integer,
+        TYPE_SFIXED64: ({Integer}) => Integer,
+        TYPE_SINT32: ({Integer}) => Integer,
+        TYPE_SINT64: ({Integer}) => Integer,
+    }[type]);
+}
+
+function mapTypeToMessagePackTisch({type, getSchemaFunction}) {
+    return function ({etc, map}) {
+        let valueSchemaFunction;
+        if (type.map.valueTypeName) {
+            valueSchemaFunction = getSchemaFunction(type.map.valueTypeName);
+        } else {
+            valueSchemaFunction = primitiveTypeToMessagePackTisch(type.map.valueType);
+        }
+        const keySchemaFunction = primitiveTypeToMessagePackTisch(type.map.keyType);
+
+        const keySchema = keySchemaFunction(...arguments);
+        const valueSchema = valueSchemaFunction(...arguments);
+        return map([keySchema, valueSchema], ...etc);
+    };
+}
+
+function typeToMessagePackTisch({type, getSchemaFunction}) {
+    if (typeof type === 'string') {
+        return primitiveTypeToMessagePackTisch;
+    }
+
+    if (type.map) {
+        return mapTypeToMessagePackTisch({type, getSchemaFunction});
+    }
+
+    // It's a message.
+    const message = type.message;
+    return function ({Any, etc, map}) {
+        return map(...message.fields.map(field => {
+            let valueSchemaFunction;
+            if (field.typeName) {
+                valueSchemaFunction = getSchemaFunction(field.typeName);
+            } else {
+                valueSchemaFunction = primitiveTypeToMessagePackTisch(field.type);
+            }
+            return [field.msgpackName, valueSchemaFunction(...arguments)];
+        }), [String, Any], ...etc);
+    };
+}
+
+// TODO: Cyclic dependencies will shatter this function. That's fine for now.
+function typesToMessagePackTisch(types) {
+    // {[type name]: type definition}  ->  {[type name]: tisch schema function}
+    const schemaFunctions = {};
+
+    function getSchemaFunction(typeName) {
+        const already = schemaFunctions[typeName];
+        if (already !== undefined) {
+            return already;
+        }
+
+        const schemaFunction = typeToMessagePackTisch({type: types[typeName], getSchemaFunction});
+        schemaFunctions[typeName] = schemaFunction;
+        return schemaFunction;
+    }
+
+    Object.keys(types).forEach(key => schemaFunctions[key] = getSchemaFunction(key));
+    return schemaFunctions;
+}
+
 function protoToMessagePackTisch({protoFiles, messageType}) {
     // TODO:
     // ✅ run protojson
     // ✅ create a mapping of types, including map<> types and @gotags names. 
     // ✅ if messageType is undefined, then get the messageType from 
     //   last(topologicallySorted(...)).
-    // - build up schemas = {[proto type name]: schema function}
+    // ✅  build up schemas = {[proto type name]: schema function}
     // - return schemas[messageType]
     
     const protoJson = invokeProtocJson({protoFiles});
     const types = parseTypeDefinitions(protoJson);
 
     if (messageType === undefined) {
-        const root = last(topologicallySorted({nodes: Object.values(types), getChildren: function* (typeDefinition) {
-            if (typeDefinition.map) {
-                // The value in (key, value) might be a message type.
-                const map = typeDefinition;
-                if (map.valueTypeName) {
-                    yield types[map.valueTypeName];
-                }
-                return;
-            }
-
-            // We're a message type. Return any of our fields whose types have
-            // names.
-            for (const field of typeDefinition.message.fields) {
-                if (field.typeName) {
-                    yield types[field.typeName];
-                }
-            }
-        }}));
-        messageType = root.name;
+        messageType = deduceRootType(types).name;
     }
 
-    // TODO
-    return {
-        types, messageType
-    };
+    const tischFunctions = typesToMessagePackTisch(types);
+    return tischFunctions[messageType];
 }
 
 function last(iterator, fallback) {
