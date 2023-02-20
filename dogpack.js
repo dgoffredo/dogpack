@@ -212,15 +212,20 @@ function typeToMessagePackTisch({type, getSchemaFunction}) {
     // It's a message.
     const message = type.message;
     return function ({Any, etc, map}) {
-        return map(...message.fields.map(field => {
-            let valueSchemaFunction;
-            if (field.typeName) {
-                valueSchemaFunction = getSchemaFunction(field.typeName);
-            } else {
-                valueSchemaFunction = primitiveTypeToMessagePackTisch(field.type);
-            }
-            return [field.msgpackName, valueSchemaFunction(...arguments)];
-        }), [String, Any], ...etc);
+        return {
+            ...Object.fromEntries(message.fields.map(field => {
+                let valueSchemaFunction;
+                if (field.typeName) {
+                    valueSchemaFunction = getSchemaFunction(field.typeName);
+                } else {
+                    valueSchemaFunction = primitiveTypeToMessagePackTisch(field.type);
+                }
+                // The question mark means "optional" in tisch. Every field is
+                // optional in proto3.
+                return [`${field.msgpackName}?`, valueSchemaFunction(...arguments)];
+            })),
+            ...etc
+        };
     };
 }
 
