@@ -1,6 +1,8 @@
-const tisch = require('./dependencies/tisch/tisch.js');
 const child_process = require('child_process');
 const path = require('path');
+const mpack = require('./dependencies/massagepack/massagepack.js');
+const tisch = require('./dependencies/tisch/tisch.js');
+
 
 function invokeProtocJson({protoIncludePaths = [], protoFiles = []}) {
     // `protoc` gets cranky if the .proto files aren't in directories. To make
@@ -393,7 +395,35 @@ function* topologicallySorted({nodes, getChildren}) {
     }
 }
 
+function validate(msgpackMessage, tischValidate) {
+    const jsMessage = mpack.decode(msgpackMessage, {usemap: true});
+    if (tischValidate(jsMessage)) {
+        return {match: jsMessage};
+    }
+    return {errors: tischValidate.errors};
+}
+
+function protoToValidator({protoFiles, messageType, protoToTisch}) {
+    const schema = protoToTisch({protoFiles, messageType});
+    const validateJs = tisch.compileFunction(schema);
+    const validator = function (msgpackMessage) {
+        return validate(msgpackMessage, validateJs);
+    };
+    validator.schema = schema;
+    return validator;
+}
+
+function protoToMessagePackValidator({protoFiles, messageType}) {
+    return protoToValidator({protoFiles, messageType, protoToTisch: protoToMessagePackTisch});
+}
+
+function protoToDogPackValidator({protoFiles, messageType}) {
+    return protoToValidator({protoFiles, messageType, protoToTisch: protoToDogPackTisch});
+}
+
 module.exports = {
     protoToMessagePackTisch,
-    protoToDogPackTisch
+    protoToDogPackTisch,
+    protoToMessagePackValidator,
+    protoToDogPackValidator,
 };

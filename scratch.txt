@@ -20,3 +20,14 @@ What does the command line interface look like?
 
     ./validate-msgpack <proto>
     ./validate-dogpack <proto>
+
+HTTP Server?
+
+    {
+        [path]: {
+            protoFiles: [String, String, ...etc],
+            messageType?: String,
+            response?: Any
+        },
+        ...etc
+    }
