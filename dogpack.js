@@ -195,6 +195,29 @@ function primitiveTypeToMessagePackTisch(type) {
     }[type]);
 }
 
+// TODO: Add `Buffer` support to tisch.
+// It's like `primitiveTypeToMessagePackTisch`, except that strings map to
+// integers (so that they're offsets into the string table).
+function primitiveTypeToDogPackTisch(type) {
+    return ({
+        TYPE_DOUBLE: () => Number,
+        TYPE_FLOAT: () => Number,
+        TYPE_INT64: ({Integer}) => Integer,
+        TYPE_UINT64:({Integer}) => Integer,
+        TYPE_INT32: ({Integer}) => Integer,
+        TYPE_FIXED64: ({Integer}) => Integer,
+        TYPE_FIXED32: ({Integer}) => Integer,
+        TYPE_BOOL: () => Boolean,
+        TYPE_STRING: ({Integer}) => Integer,
+        TYPE_BYTES: () => Buffer,
+        TYPE_UINT32: ({Integer}) => Integer,
+        TYPE_SFIXED32: ({Integer}) => Integer,
+        TYPE_SFIXED64: ({Integer}) => Integer,
+        TYPE_SINT32: ({Integer}) => Integer,
+        TYPE_SINT64: ({Integer}) => Integer,
+    }[type]);
+}
+
 function mapTypeToMessagePackTisch({type, getSchemaFunction}) {
     return function ({etc, map}) {
         let valueSchemaFunction;
@@ -208,6 +231,51 @@ function mapTypeToMessagePackTisch({type, getSchemaFunction}) {
         const keySchema = keySchemaFunction(...arguments);
         const valueSchema = valueSchemaFunction(...arguments);
         return map([keySchema, valueSchema], ...etc);
+    };
+}
+
+function mapTypeToDogPackTisch({type, getSchemaFunction}) {
+    return function ({etc, map}) {
+        let valueSchemaFunction;
+        if (type.map.valueTypeName) {
+            valueSchemaFunction = getSchemaFunction(type.map.valueTypeName);
+        } else {
+            valueSchemaFunction = primitiveTypeToDogPackTisch(type.map.valueType);
+        }
+        const keySchemaFunction = primitiveTypeToDogPackTisch(type.map.keyType);
+
+        const keySchema = keySchemaFunction(...arguments);
+        const valueSchema = valueSchemaFunction(...arguments);
+        return map([keySchema, valueSchema], ...etc);
+    };
+}
+
+function typeToDogPackTisch({type, getSchemaFunction}) {
+    if (typeof type === 'string') {
+        return primitiveTypeToDogPackTisch(type);
+    }
+
+    if (type.map) {
+        return mapTypeToDogPackTisch({type, getSchemaFunction});
+    }
+
+    // It's a message.
+    const message = type.message;
+    return function ({Any, etc}) {
+        return [...message.fields.map(field => {
+                let valueSchemaFunction;
+                if (field.typeName) {
+                    valueSchemaFunction = getSchemaFunction(field.typeName);
+                } else {
+                    valueSchemaFunction = primitiveTypeToMessagePackTisch(field.type);
+                }
+                const valueSchema = valueSchemaFunction(...arguments);
+                if (field.isArray) {
+                    return [valueSchema, ...etc];
+                }
+                return valueSchema;
+            }),
+            Any, ...etc];
     };
 }
 
@@ -269,7 +337,7 @@ function typesToTisch({types, typeToTisch}) {
     return schemaFunctions;
 }
 
-function protoToTisch({protoFiles, messageType, typeToTisch}) {
+function protoToMessagePackTisch({protoFiles, messageType}) {
     const protoJson = invokeProtocJson({protoFiles});
     const types = parseTypeDefinitions(protoJson);
 
@@ -277,12 +345,25 @@ function protoToTisch({protoFiles, messageType, typeToTisch}) {
         messageType = deduceRootType(types).name;
     }
 
-    const tischFunctions = typesToTisch({types, typeToTisch});
+    const tischFunctions = typesToTisch({types, typeToTisch: typeToMessagePackTisch});
     return tischFunctions[messageType];
 }
 
-function protoToMessagePackTisch({protoFiles, messageType}) {
-    return protoToTisch({protoFiles, messageType, typeToTisch: typeToMessagePackTisch});
+function protoToDogPackTisch({protoFiles, messageType}) {
+    const protoJson = invokeProtocJson({protoFiles});
+    const types = parseTypeDefinitions(protoJson);
+
+    if (messageType === undefined) {
+        messageType = deduceRootType(types).name;
+    }
+
+    const tischFunctions = typesToTisch({types, typeToTisch: typeToDogPackTisch});
+    return function ({etc}) {
+        return [
+            [String, String, ...etc],
+            tischFunctions[messageType](...arguments)
+        ];
+    };
 }
 
 function last(iterator, fallback) {
@@ -313,5 +394,6 @@ function* topologicallySorted({nodes, getChildren}) {
 }
 
 module.exports = {
-    protoToMessagePackTisch
+    protoToMessagePackTisch,
+    protoToDogPackTisch
 };

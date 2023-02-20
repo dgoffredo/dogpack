@@ -8,10 +8,9 @@ function debug(object) {
     console.log(util.inspect(object, {depth: null}));
 }
 
-const rootSchema = dogpack.protoToMessagePackTisch({protoFiles: ['scratch/span.proto', 'scratch/tracer_payload.proto']});
-debug(rootSchema);
+const msgpackSchema = dogpack.protoToMessagePackTisch({protoFiles: ['scratch/span.proto', 'scratch/tracer_payload.proto']});
+const validateMsgpack = tisch.compileFunction(msgpackSchema);
+const dogpackSchema = dogpack.protoToDogPackTisch({protoFiles: ['scratch/span.proto', 'scratch/tracer_payload.proto']});
+const validateDogpack = tisch.compileFunction(dogpackSchema);
 
-const validateRoot = tisch.compileFunction(rootSchema);
-debug(validateRoot);
-
-module.exports = {dogpack, tisch, debug, schema: rootSchema, validate: validateRoot};
+module.exports = {dogpack, tisch, debug, msgpackSchema, validateMsgpack, dogpackSchema, validateDogpack};
