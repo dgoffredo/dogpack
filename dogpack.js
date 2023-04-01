@@ -155,7 +155,7 @@ function parseTypeDefinitions(protoJson) {
 
 function deduceRootType(types) {
     // Deduce the "root type name" by topologically sorting the type
-    // definitions. Assign the resulting name to `messageType`.
+    // definitions.
     return last(topologicallySorted({nodes: Object.values(types), getChildren: function* (typeDefinition) {
         if (typeDefinition.map) {
             // The value in (key, value) might be a message type.
