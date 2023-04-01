@@ -134,9 +134,9 @@ function parseTypeDefinitions(protoJson) {
                 // `map<...>`, because maps are just syntactic sugar for
                 // `repeated` key/value messages.
                 // So, we detect the latter case by seeing whether the field
-                // type name begins with the type name. That means its a nested
+                // type name begins with the type name. That means it's a nested
                 // type, which maps are.
-                // Non-map nested types I we won't worry about.
+                // Non-map nested types I won't worry about.
                 if (field.label === 'LABEL_REPEATED' && !(field.typeName || '').startsWith(`${typeName}.`)) {
                     fieldDefinition.isArray = true;
                 }
